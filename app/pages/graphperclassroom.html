@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>PHP Project</title>
+    <link rel="stylesheet" href="../css/styles.css">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+        integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
+        integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
+        crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"
+        integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1"
+        crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"
+        integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM"
+        crossorigin="anonymous"></script>
+    <script src="https://code.jquery.com/jquery-3.4.1.js"
+        integrity="sha256-WpOohJOqMqqyKL9FccASB9O0KwACQJpFTUBLTYOVvVU=" crossorigin="anonymous"></script>
+    <script src="../js/csi.min.js"></script>
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/lodash@4.17.15/lodash.min.js"></script>
+</head>
+
+<body>
+    <div data-include="../components/header.html"></div>
+    <div class="container">
+        <h4 style="text-align: center" id="score"></h4>
+        <div id="chart_div"></div>
+        <div id="pie_div" style="display: flex; justify-content: center;"></div>
+    </div>
+</body>
+<script>
+    $(document).ready(function () {
+        fetchPerScoreData()
+        fetchPerIntervalData()
+    })
+
+    function fetchPerIntervalData() {
+        const urlParams = new URLSearchParams(window.location.search)
+        const id = urlParams.get('id')
+
+        jQuery.ajax({
+            url: 'http://localhost:8080/project/backend/src/services/studentclass.php',
+            dataType: 'json',
+            async: true,
+            type: 'POST',
+            data: {
+                option: 'GET_STUDENTS_CLASS_BY_INTERVAL',
+                payload: {
+                    id
+                }
+            },
+        }).done((data) => {
+            data = jQuery.parseJSON(data)
+            google.charts.load('current', {
+                packages: ['corechart'],
+                callback: () => drawPie(data)
+            })
+        })
+    }
+
+    function drawPie(dados) {
+
+        const arr = dados.map(dado => [
+            [dado.a.interval, dado.a.value],
+            [dado.b.interval, dado.b.value],
+            [dado.c.interval, dado.c.value],
+        ])[0]
+
+        var data = new google.visualization.arrayToDataTable([
+            ['Intervalo', 'Score'],
+            arr[0],
+            arr[1],
+            arr[2],
+        ])
+
+        var options = {
+            title: 'Score por intervalos',
+            width: 500,
+            height: 300,
+        }
+
+        var chart = new google.visualization.PieChart(document.getElementById('pie_div'));
+
+        chart.draw(data, options);
+    }
+
+    function fetchPerScoreData() {
+        const urlParams = new URLSearchParams(window.location.search)
+        const id = urlParams.get('id')
+
+        jQuery.ajax({
+            // url: `http://localhost:3333/studentclass/${id}`,
+            url: 'http://localhost:8080/project/backend/src/services/studentclass.php',
+            dataType: 'json',
+            async: true,
+            type: 'POST',
+            data: {
+                option: 'GET_STUDENTS_CLASS_BY_ID',
+                payload: {
+                    id
+                }
+            },
+        }).done((data) => {
+            data = jQuery.parseJSON(data)
+            if (data && data.status === 'SUCCESS') {
+                google.charts.load('current', {
+                    packages: ['corechart', 'bar'],
+                    callback: () => drawBasic(data.payload)
+                })
+            }
+            // setTimeout(() => {
+            //     drawBasic(data)
+            // }, 100)
+        })
+    }
+
+    function drawBasic(dados) {
+
+        let students = dados.students.map(dado => {
+            // return {
+            //     name: dado.student_id.name,
+            //     score: dado.student_id.score
+            // }
+            return {
+                name: dado.student,
+                score: parseFloat(dado.score)
+            }
+        })
+        if (students && students !== undefined) {
+
+            students = students.slice(0, 5)
+
+            var data = new google.visualization.DataTable()
+            data.addColumn('string', 'Aluno')
+            data.addColumn('number', 'Score')
+
+            students.map(student => {
+                data.addRow([student.name, student.score])
+            })
+
+            var options = {
+                title: 'Score dos alunos',
+                chartArea: { width: '50%' },
+                hAxis: {
+                    title: 'Score total',
+                    minValue: 0
+                },
+                vAxis: {
+                    title: 'Aluno'
+                }
+            };
+
+            var chart = new google.visualization.BarChart(document.getElementById('chart_div'));
+
+            chart.draw(data, options);
+        }
+    }
+</script>
+
+</html>

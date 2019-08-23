@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>PHP Project</title>
+    <link rel="stylesheet" href="../css/styles.css">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+        integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
+        integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
+        crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"
+        integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1"
+        crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"
+        integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM"
+        crossorigin="anonymous"></script>
+    <script src="https://code.jquery.com/jquery-3.4.1.js"
+        integrity="sha256-WpOohJOqMqqyKL9FccASB9O0KwACQJpFTUBLTYOVvVU=" crossorigin="anonymous"></script>
+    <script src="../js/csi.min.js"></script>
+</head>
+
+<body>
+    <div data-include="../components/header.html"></div>
+    <main class="mt-5">
+        <div class="container" style="height: 100%">
+            <div class="card">
+                <div class="card-header">
+                    <h3 id="title"></h3>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-6">
+                            <input type="text" id="studentCode" class="form-control" placeholder="Código do aluno">
+                        </div>
+                        <button id="btnSearchStudent" type="button" class="btn btn-success">Buscar</button>
+                    </div>
+                    <div class="row mt-4">
+                        <div class="col-3">
+                            <label for="">Nome</label>
+                            <input id="id" type="hidden" readonly class="form-control" placeholder="Id do aluno">
+                            <input id="name" type="text" readonly class="form-control" placeholder="Nome do aluno">
+                        </div>
+                        <div class="col-3">
+                            <label for="">Rank geral</label>
+                            <input type="text" readonly id="rank" class="form-control" placeholder="Rank geral">
+                        </div>
+                        <div class="col-3">
+                            <label for="">Instituição</label>
+                            <input type="text" readonly id="institution" class="form-control" placeholder="Instituição">
+                        </div>
+                        <div class="col-3">
+                            <label for="">Inscrito desde</label>
+                            <input type="text" readonly id="signedsince" class="form-control"
+                                placeholder="Inscrito desde">
+                        </div>
+                    </div>
+                    <div class="row mt-2">
+                        <div class="col-3">
+                            <label for="">Score do aluno</label>
+                            <input type="text" readonly id="score" class="form-control" placeholder="Score do aluno">
+                        </div>
+                        <div class="col-3">
+                            <label for="">Resolvidos</label>
+                            <input type="text" readonly id="solved" class="form-control" placeholder="Resolvidos">
+                        </div>
+                        <div class="col-3">
+                            <label for="">Tentados</label>
+                            <input type="text" readonly id="tried" class="form-control" placeholder="Tentados">
+                        </div>
+                        <div class="col-3">
+                            <label for="">Submissões</label>
+                            <input type="text" readonly id="submissions" class="form-control" placeholder="Submissões">
+                        </div>
+                    </div>
+                    <div class="row mt-2">
+                        <div class="col-12 d-flex justify-content-end">
+                            <button id="btnAddStudent" class="btn btn-success">Adicionar aluno</button>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-12">
+                            <table class="table table-hover mt-4" style="border-radius: 5px">
+                                <thead>
+                                    <tr>
+                                        <th scope="col">Código</th>
+                                        <th scope="col">Aluno</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="studentClass-table-body"></tbody>
+                            </table>
+                            <div class="col-12 mt-3 d-flex justify-content-end">
+                                <a class="btn btn-primary mr-3" href="/project/app/pages/classes.html">Voltar</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</body>
+<script>
+    function fetchData() {
+        const urlParams = new URLSearchParams(window.location.search)
+        const id = urlParams.get('id')
+
+        jQuery.ajax({
+            url: 'http://localhost:8080/project/backend/src/services/studentclass.php',
+            // url: `http://localhost:3333/studentclass/${id}`,
+            dataType: 'json',
+            // type: 'GET',
+            type: 'POST',
+            data: {
+                option: 'GET_STUDENTS_CLASS_BY_ID',
+                payload: {
+                    id
+                }
+            },
+            success: (data) => {
+                // data.map(p => {
+                //     $(".studentClass-table-body").append(`
+                //         <tr>
+                //             <td>${p.student_id.code}</td>
+                //             <td>${p.student_id.name}</td>
+                //         </tr>
+                //     `)
+                // })
+                data = jQuery.parseJSON(data)
+                if (data.status === 'SUCCESS') {
+                    data.payload.students.map(p => {
+                        $(".studentClass-table-body").append(`
+                            <tr>
+                                <td>${p.code}</td>
+                                <td>${p.student}</td>
+                            </tr>
+                        `)
+                    })
+                    $('#title').text(`Adicionar aluno a turma - ${data.payload.classroom.name}`)
+                }
+            }
+        })
+    }
+
+    $(document).ready(function () {
+        fetchData()
+
+        $("#btnAddStudent").click(() => {
+            const urlParams = new URLSearchParams(window.location.search)
+            const id = urlParams.get('id')
+
+            jQuery.ajax({
+                url: 'http://localhost:8080/project/backend/src/services/studentclass.php',
+                // url: 'http://localhost:3333/studentclass',
+                dataType: 'json',
+                type: 'POST',
+                // data: {
+                //     class_id: id,
+                //     student_id: $('#id').val()
+                // }
+                data: {
+                    option: 'ADD_TO_CLASS',
+                    payload: {
+                        classroom: id,
+                        studentId: $('#id').val()
+                    }
+                }
+            })
+                .done((data) => {
+                    $(".studentClass-table-body").append(`
+                        <tr>
+                            <td>${$('#studentCode').val()}</td>
+                            <td>${$('#name').val()}</td>
+                        </tr>
+                    `)
+                    $('#studentCode').val('')
+                    $('#id').val('')
+                    $('#name').val('')
+                    $('#rank').val('')
+                    $('#institution').val('')
+                    $('#signedsince').val('')
+                    $('#score').val('')
+                    $('#solved').val('')
+                    $('#tried').val('')
+                    $('#submissions').val('')
+                })
+        })
+
+        $("#btnSearchStudent").click(() => {
+            jQuery.ajax({
+                url: 'http://localhost:8080/project/backend/src/services/studentclass.php',
+                // url: `http://localhost:3333/student/search/${$('#studentCode').val()}`,
+                dataType: 'json',
+                // type: 'GET',
+                type: 'POST',
+                data: {
+                    option: 'SEARCH_STUDENT',
+                    payload: {
+                        code: $('#studentCode').val()
+                    }
+                }
+            })
+                .done((data) => {
+                    if (data.signedSince === '0000-00-00 00:00:00') {
+                        const now = new Date()
+                        data.signedSince = `${now.getDate()}/${now.getMonth() + 1}/${now.getFullYear()}`
+                    } else {
+                        const now = new Date(data.signedSince)
+                        data.signedSince = `${now.getDate()}/${now.getMonth() + 1}/${now.getFullYear()}`
+                    }
+
+                    $('#id').val(data.id)
+                    $('#name').val(data.name)
+                    $('#rank').val(data.generalrank)
+                    $('#institution').val(data.instituicao)
+                    $('#signedsince').val(data.signedsince)
+                    $('#score').val(data.score)
+                    $('#solved').val(data.solved)
+                    $('#tried').val(data.tried)
+                    $('#submissions').val(data.submissions)
+                })
+        })
+
+
+        $("#form").on('submit', (e) => {
+            e.preventDefault()
+            const urlParams = new URLSearchParams(window.location.search)
+            const id = urlParams.get('id')
+
+            jQuery.ajax({
+                url: 'http://localhost:8080/project/backend/src/services/studentclass.php',
+                dataType: 'json',
+                type: 'POST',
+                data: {
+                    option: 'PUT',
+                    payload: {
+                        id,
+                        name: $('#name').val()
+                    }
+                }
+            })
+                .done((data) => {
+                    if (data === 'SUCCESS') {
+                        alert('Sucesso ao alterar')
+                        window.location = '/project/app/pages/classes.html'
+                    }
+                })
+        })
+    })
+</script>
+
+</html>

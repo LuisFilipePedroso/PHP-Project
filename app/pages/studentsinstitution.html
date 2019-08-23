@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>PHP Project</title>
+    <link rel="stylesheet" href="../css/styles.css">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+        integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
+        integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
+        crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"
+        integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1"
+        crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"
+        integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM"
+        crossorigin="anonymous"></script>
+    <script src="https://code.jquery.com/jquery-3.4.1.js"
+        integrity="sha256-WpOohJOqMqqyKL9FccASB9O0KwACQJpFTUBLTYOVvVU=" crossorigin="anonymous"></script>
+    <script src="../js/csi.min.js"></script>
+</head>
+
+<body>
+    <div data-include="../components/header.html"></div>
+    <main class="mt-5">
+        <div class="container" style="height: 100%">
+            <div class="card">
+                <div class="card-header">
+                    <h3 id="title">Consulta de alunos instituição</h3>
+                </div>
+                <div class="card-body">
+                    <table class="table table-hover mt-4" style="border-radius: 5px">
+                        <thead>
+                            <tr>
+                                <th scope="col">Código</th>
+                                <th scope="col">Nome</th>
+                            </tr>
+                        </thead>
+                        <tbody class="students-table-body"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+</body>
+<script>
+    $(document).ready(function () {
+        fetchInitialData()
+    })
+
+    function fetchInitialData() {
+        const urlParams = new URLSearchParams(window.location.search)
+        const id = urlParams.get('id')
+
+        jQuery.ajax({
+            url: 'http://localhost:8080/project/backend/src/services/institution.php',
+            dataType: 'json',
+            type: 'POST',
+            data: {
+                option: 'GET_STUDENTS_PER_INSTITUTION',
+                payload: {
+                    id
+                }
+            },
+            success: (data) => {
+                data = jQuery.parseJSON(data)
+                console.log(data)
+                if (data.status === 'SUCCESS') {
+                    data.payload.students.map(p => {
+                        $(".students-table-body").append(`
+                            <tr>
+                                <td>${p.code || ''}</td>
+                                <td>${p.studentname}</td>
+                            </tr>
+                        `)
+                    })
+                    $('#title').text(`Alunos da turma - ${data.payload.institution.name}`)
+                }
+            }
+        })
+    }
+</script>
+
+</html>
